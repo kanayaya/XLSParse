@@ -61,7 +61,7 @@ class TableFiller<T> {
                 .skip(skip)
                 .takeWhile(stopIf.negate())
                 .forEach(row ->  {
-                    T data = getter.getUnchecked();
+                    T data = getter.get();
                     if (columnFillers.size() > row.getLastCellNum()) {
                         throw new IllegalStateException(String.format("Недостаточно ячеек в ряду. Количество обработчиков для каждой -- %d, а номер последней ячейки -- %d", columnFillers.size(), row.getLastCellNum()));
                     } else if (columnFillers.size() < row.getLastCellNum()) {
@@ -77,13 +77,13 @@ class TableFiller<T> {
                         XSSFCell cell = row.getCell(i);
                         if (cell == null) {throw new NullPointerException(String.format("Ячейка %d ряда %d листа \"%s\" не существует", i, row.getRowNum(), sheet.getSheetName()));}
                         try {
-                            columnFillers.get(i - row.getFirstCellNum()).acceptUnchecked(data, cell);
+                            columnFillers.get(i - row.getFirstCellNum()).accept(data, cell);
                         } catch (RuntimeException e) {
                             if (e.getCause() instanceof IllegalStateException) throw new IllegalStateException("Несовпадение типов поля и запрашиваемого значения. См. причину: " + e.getCause().getMessage(), e.getCause());
                             else throw e;
                         }
                     }
-                    filler.acceptUnchecked(data);
+                    filler.accept(data);
                 });
         return continueNext.get()? rowCounter.get() : 0;
     }
