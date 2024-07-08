@@ -22,8 +22,8 @@ class XLSTableParserTest {
                 .endIfCell(0).isNull().or().isEmpty().or().isNotNumeric()
                 .getEntityFrom(() -> new LinkedHashMap<String, String>())
 
-                .thenForColumnStringifiedValue((dto, s) -> dto.put(s, s))
-                .thenForColumn((dto, cell) -> dto.put(cell.getRawValue(), Integer.toString(Double.valueOf(cell.getNumericCellValue()).intValue())))
+                .thenForNextColumnStringified((dto, s) -> dto.put(s, s))
+                .thenForNextColumn((dto, cell) -> dto.put(cell.getRawValue(), Integer.toString(Double.valueOf(cell.getNumericCellValue()).intValue())))
                 .thenPutInto(System.out::println)
 
                 .thenContinueSameSheet()
@@ -32,8 +32,8 @@ class XLSTableParserTest {
                 .endIfCell(2).isNull().or().isEmpty()
                 .getEntityFrom(() -> new LinkedHashMap<String, String>())
 
-                .thenForColumn((dto, cell) -> dto.put(cell.getStringCellValue(), cell.getStringCellValue()))
-                .thenForColumn((dto, cell) -> dto.put(cell.getRawValue(), cell.getStringCellValue()))
+                .thenForNextColumn((dto, cell) -> dto.put(cell.getStringCellValue(), cell.getStringCellValue()))
+                .thenForNextColumn((dto, cell) -> dto.put(cell.getRawValue(), cell.getStringCellValue()))
                 .thenPutInto(System.out::println)
 
                 .parse(book);
