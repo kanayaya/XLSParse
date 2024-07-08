@@ -64,7 +64,6 @@ import java.util.function.Predicate;
  *         .parse(xssfWorkbook)}</pre>
  */
 @Slf4j
-@SuppressWarnings("unused")
 public class XLSTableParser {
     /**
      * Когда задана инструкция, сюда кладётся её формальное объявление как экземпляр класса {@link TableFiller}
