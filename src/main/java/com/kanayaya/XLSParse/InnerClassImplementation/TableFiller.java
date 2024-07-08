@@ -1,57 +1,94 @@
 package com.kanayaya.XLSParse.InnerClassImplementation;
 
-import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
+/**
+ * Структура, содержащая инструкции для парсинга таблицы и метод, совершающий парсинг
+ * @param <T> Тип DTO, куда кладутся результаты парсинга
+ */
 @Slf4j
 class TableFiller<T> {
-    private final AtomicBoolean continueNext = new AtomicBoolean(false);
-    private final AtomicInteger rowCounter = new AtomicInteger();
-    @Getter
+    /**
+     * Функция, возвращающая {@link XSSFSheet} для парсинга. Нужна для задания логики доставания листа из {@link XSSFWorkbook}
+     */
     private final Function<XSSFWorkbook, XSSFSheet> sheetGetter;
-    private final List<UncheckedBiConsumer<T, XSSFCell>> columnFillers;
-    private final UncheckedSupplier<T> getter;
+    /**
+     * Предикат, определяющий, с какого ряда таблицы начинать парсинг
+     */
     private final Predicate<XSSFRow> startIf;
-    private final Predicate<XSSFRow> stopIf;
+    /**
+     * Количество рядов, пропускаемых перед началом парсинга таблицы.
+     * Нужно если первые N рядов таблицы являются заголовками или их не нужно парсить
+     */
     private final int skip;
-    private final UncheckedConsumer<T> filler;
+    /**
+     * Предикат, определяющий, на каком ряду таблицы закончить парсинг
+     */
+    private final Predicate<XSSFRow> stopIf;
+    /**
+     * Генератор новых DTO для наполнения данными парсинга. Генерируется новый DTO для каждого ряда таблицы.
+     */
+    private final UncheckedSupplier<T> getter;
+    /**
+     * Набор инструкций от первой ячейки, задающих метод парсинга каждого столбца каждого ряда
+     * таблицы.
+     */
+    private final UncheckedBiConsumer<T, XSSFRow> columnFiller;
+    /**
+     * Нужен для того, чтобы складывать туда созданные и наполненные DTO
+     */
+    private final UncheckedConsumer<? super T> dtoConsumer;
 
     TableFiller(
             Function<XSSFWorkbook, XSSFSheet> sheetGetter,
-            List<UncheckedBiConsumer<T, XSSFCell>> columnFillers,
+            UncheckedBiConsumer<T, XSSFRow> columnFiller,
             UncheckedSupplier<T> getter,
             Predicate<XSSFRow> rowFilter,
             Predicate<XSSFRow> stopIf,
             int skip,
-            UncheckedConsumer<T> filler) {
+            UncheckedConsumer<? super T> filler) {
         this.sheetGetter = sheetGetter;
-        this.columnFillers = columnFillers;
+        this.columnFiller = columnFiller;
         this.getter = getter;
         this.startIf = rowFilter;
         this.stopIf = stopIf;
         this.skip = skip;
-        this.filler = filler;
-    }
-    void continueWhereEnded() {
-        continueNext.set(true);
+        this.dtoConsumer = filler;
     }
 
-    int fillFrom(XSSFWorkbook book, int start) {
-        AtomicBoolean logToWarn = new AtomicBoolean(true);
-        log.info("Начинаем парсинг XLS со строки " + start);
+    /**
+     * Метод для запуска парсинга таблицы.
+     * <p>Собирает данные после сбора инструкций и парсит по ним выбранную книгу</p>
+     * @param book Книга, в которой находится таблица
+     * @param start Номер ряда, с которого начинается парсинг
+     * @return Ноль для следующего парсера
+     */
+    int fillFrom(@NonNull XSSFWorkbook book, int start) {
+        fillContinuing(book, start);
+        return 0;
+    }
+
+    /**
+     * Метод для запуска парсинга таблицы.
+     * <p>Собирает данные после сбора инструкций и парсит по ним выбранную книгу</p>
+     * @param book Книга, в которой находится таблица
+     * @param start Номер ряда, с которого начинается парсинг
+     * @return Номер строки, на которой закончился парсинг
+     */
+    int fillContinuing(@NonNull XSSFWorkbook book, int start) {
+        final AtomicInteger rowCounter = new AtomicInteger(start);
         XSSFSheet sheet = sheetGetter.apply(book);
+        log.info(String.format("Начинаем парсинг XLS-листа \"%s\" со строки %d", sheet.getSheetName(), start));
         if (start > sheet.getLastRowNum()) throw new IllegalArgumentException(String.format("Стартовый ряд (%d) не может быть больше максимального количества рядов на листе (%d)", start, sheet.getLastRowNum()));
         IntStream.range(start, sheet.getLastRowNum() + 1)
                 .peek(rowCounter::set)
@@ -62,29 +99,10 @@ class TableFiller<T> {
                 .takeWhile(stopIf.negate())
                 .forEach(row ->  {
                     T data = getter.get();
-                    if (columnFillers.size() > row.getLastCellNum()) {
-                        throw new IllegalStateException(String.format("Недостаточно ячеек в ряду. Количество обработчиков для каждой -- %d, а номер последней ячейки -- %d", columnFillers.size(), row.getLastCellNum()));
-                    } else if (columnFillers.size() < row.getLastCellNum()) {
-                        String message = String.format("Количество ячеек в ряду (%d) больше количества обработчиков для каждой (%d), вы уверены что указали все обработчики?", row.getLastCellNum(), columnFillers.size());
-                        if (logToWarn.get()) {
-                            log.warn(message);
-                            logToWarn.set(false);
-                        } else {
-                            log.debug(message);
-                        }
-                    }
-                    for (int i = row.getFirstCellNum(); i < columnFillers.size(); i++) {
-                        XSSFCell cell = row.getCell(i);
-                        if (cell == null) {throw new NullPointerException(String.format("Ячейка %d ряда %d листа \"%s\" не существует", i, row.getRowNum(), sheet.getSheetName()));}
-                        try {
-                            columnFillers.get(i - row.getFirstCellNum()).accept(data, cell);
-                        } catch (RuntimeException e) {
-                            if (e.getCause() instanceof IllegalStateException) throw new IllegalStateException("Несовпадение типов поля и запрашиваемого значения. См. причину: " + e.getCause().getMessage(), e.getCause());
-                            else throw e;
-                        }
-                    }
-                    filler.accept(data);
+                    columnFiller.accept(data, row);
+                    dtoConsumer.accept(data);
                 });
-        return continueNext.get()? rowCounter.get() : 0;
+        return rowCounter.get();
     }
 }
+  
