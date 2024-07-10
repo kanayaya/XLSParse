@@ -323,7 +323,7 @@ public class XLSTableParser {
         }
         /**
          * @param generator {@link UncheckedSupplier} Генератор DTO
-         * @param <T> Тип DTO
+         * @param <T>       Тип DTO
          * @return {@link EntityFillerSequential} Класс для заполнения DTO заданного типа
          */
         @Contract("_ -> new")
@@ -341,7 +341,7 @@ public class XLSTableParser {
 
         /**
          * @param generator {@link UncheckedSupplier} Генератор DTO
-         * @param <T> Тип DTO
+         * @param <T>       Тип DTO
          * @return {@link EntityFillerSequential} Класс для заполнения DTO заданного типа
          */
         @Contract("_ -> new")
@@ -377,7 +377,7 @@ public class XLSTableParser {
         /**
          * Принимает номер столбца и {@link UncheckedBiConsumer} для заполнения DTO его строковым значением
          * @param cellNum Номер столбца
-         * @param filler {@link UncheckedBiConsumer} для заполнения DTO
+         * @param filler  {@link UncheckedBiConsumer} для заполнения DTO
          * @return Такой же {@link EntityFillerNumberChooser} для дальнейшего заполнения DTO
          * или перехода к следующему этапу инструкции
          */
@@ -401,7 +401,7 @@ public class XLSTableParser {
         /**
          * Метод для внесения способа заполнения DTO из ячейки.
          * @param cellNum Номер столбца ряда начиная с 0. Или используйте {@link CellCodes#FIRST} или {@link CellCodes#LAST} для первого и последнего столбца соответственно
-         * @param filler Лямбда, говорящая о том, как положить содержимое ячейки в DTO
+         * @param filler  Лямбда, говорящая о том, как положить содержимое ячейки в DTO
          * @return Себя же, для дальнейшего заполнения
          */
         @Contract("_, _ -> new")
@@ -416,7 +416,7 @@ public class XLSTableParser {
         /**
          * Метод для внесения способа заполнения DTO из строкового представления ячейки.
          * @param cellNum Номер столбца ряда начиная с 0. Или используйте {@link CellCodes#FIRST} или {@link CellCodes#LAST} для первого и последнего столбца соответственно
-         * @param filler Лямбда, говорящая о том, как положить содержимое ячейки в DTO
+         * @param filler  Лямбда, говорящая о том, как положить содержимое ячейки в DTO
          * @return Себя же, для дальнейшего заполнения
          */
         @Contract("_, _ -> new")
@@ -507,7 +507,7 @@ public class XLSTableParser {
      * не являются аналогами последовательных записей условий через && и ||<br>
      * При удовлетворении первого условия при союзе || или неудовлетворении при союзе &&<br>
      * вся цепочка будет считаться завершённой и вернёт соответствующий результат
-     * @param <LINKER> Циклический дженерик для указания связи с парой-линкером
+     * @param <LINKER>    Циклический дженерик для указания связи с парой-линкером
      * @param <CONDITION> Дженерик, в котором следует указать наследующий класс для выставления цикла
      */
     private static abstract class Condition<
