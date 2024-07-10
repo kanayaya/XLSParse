@@ -8,8 +8,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.IntStream;
 
 /**
@@ -38,25 +37,25 @@ class TableFiller<T> {
     /**
      * Генератор новых DTO для наполнения данными парсинга. Генерируется новый DTO для каждого ряда таблицы.
      */
-    private final UncheckedSupplier<T> getter;
+    private final Supplier<T> getter;
     /**
      * Набор инструкций от первой ячейки, задающих метод парсинга каждого столбца каждого ряда
      * таблицы.
      */
-    private final UncheckedBiConsumer<T, XSSFRow> columnFiller;
+    private final BiConsumer<T, XSSFRow> columnFiller;
     /**
      * Нужен для того, чтобы складывать туда созданные и наполненные DTO
      */
-    private final UncheckedConsumer<? super T> dtoConsumer;
+    private final Consumer<? super T> dtoConsumer;
 
     TableFiller(
             Function<XSSFWorkbook, XSSFSheet> sheetGetter,
-            UncheckedBiConsumer<T, XSSFRow> columnFiller,
-            UncheckedSupplier<T> getter,
+            BiConsumer<T, XSSFRow> columnFiller,
+            Supplier<T> getter,
             Predicate<XSSFRow> rowFilter,
             Predicate<XSSFRow> stopIf,
             int skip,
-            UncheckedConsumer<? super T> filler) {
+            Consumer<? super T> filler) {
         this.sheetGetter = sheetGetter;
         this.columnFiller = columnFiller;
         this.getter = getter;
