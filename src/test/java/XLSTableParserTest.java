@@ -69,7 +69,7 @@ class XLSTableParserTest {
                 .thenFromSheet(book.getSheetName(0))
                 .findRowWhereCell(0).isNotNull().and().isNotEmpty().and().stringValueContains("title 1")
                 .noSkip()
-                .endIfCell(0).isNull().or().isEmpty().or().isNotString().orOtherCell(1).isNotNull()
+                .endIfCell(0).isNull().or().isEmpty().or().isNotString().orOtherCell(1).isNotNull().and().isBoolean().or().isFormula().or().isNumeric().or().isString().or().isError()
                 .getEntityFrom(() -> new LinkedHashMap<String, String>())
 
                 .thenForColumn(0, (dto, cell) -> dto.put(cell.getStringCellValue(), cell.getStringCellValue()))

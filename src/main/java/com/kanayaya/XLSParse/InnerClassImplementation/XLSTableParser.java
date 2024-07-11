@@ -514,12 +514,12 @@ public class XLSTableParser {
     private static abstract class Condition<
             LINKER extends ConditionLinker<CONDITION, LINKER>,
             CONDITION extends Condition<LINKER, CONDITION>> {
-        private static final Predicate<XSSFCell> IS_NUMERIC = cell -> cell.getCellType().equals(CellType.NUMERIC);
-        private static final Predicate<XSSFCell> IS_STRING = cell -> cell.getCellType().equals(CellType.STRING);
-        private static final Predicate<XSSFCell> IS_BLANK = cell -> cell.getCellType().equals(CellType.BLANK);
-        private static final Predicate<XSSFCell> IS_BOOLEAN = cell -> cell.getCellType().equals(CellType.BOOLEAN);
-        private static final Predicate<XSSFCell> IS_ERROR = cell -> cell.getCellType().equals(CellType.ERROR);
-        private static final Predicate<XSSFCell> IS_FORMULA = cell -> cell.getCellType().equals(CellType.FORMULA);
+        private static final Predicate<XSSFCell> IS_NUMERIC = cell -> cell != null && cell.getCellType().equals(CellType.NUMERIC);
+        private static final Predicate<XSSFCell> IS_STRING = cell -> cell != null && cell.getCellType().equals(CellType.STRING);
+        private static final Predicate<XSSFCell> IS_BLANK = cell -> cell != null && cell.getCellType().equals(CellType.BLANK);
+        private static final Predicate<XSSFCell> IS_BOOLEAN = cell -> cell != null && cell.getCellType().equals(CellType.BOOLEAN);
+        private static final Predicate<XSSFCell> IS_ERROR = cell -> cell != null && cell.getCellType().equals(CellType.ERROR);
+        private static final Predicate<XSSFCell> IS_FORMULA = cell -> cell != null && cell.getCellType().equals(CellType.FORMULA);
         private static final Predicate<XSSFCell> IS_NULL = Objects::isNull;
 
         /**
