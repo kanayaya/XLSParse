@@ -18,7 +18,7 @@ public interface TransitiveBiFunction<T, C, R> extends BiFunction<T, C, R> {
      * @param <R2> Тип результата, возвращаемого следующей функцией
      * @return Спаренные в цепочку функции
      */
-    default <R2> TransitiveBiFunction<T, C, R2> andThen(@NonNull TransitiveBiFunction<? super T, ? super R, R2> that) {
+    default <R2> TransitiveBiFunction<T, C, R2> andThen(@NonNull BiFunction<? super T, ? super R, R2> that) {
         return (transitive, chained) -> that.apply(transitive, apply(transitive, chained));
     }
 }
