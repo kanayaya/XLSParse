@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 
-class XLSTableParserTest {
+class XLSTableParserIntegrationTest {
 
     @Test
     void fromSheet() throws IOException {
